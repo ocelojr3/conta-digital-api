@@ -1,0 +1,26 @@
+services:
+  banco:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: conta
+      POSTGRES_PASSWORD: conta_local
+      POSTGRES_DB: conta_digital
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U conta -d conta_digital"]
+      interval: 3s
+      retries: 10
+    volumes:
+      - dados:/var/lib/postgresql/data
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://conta:conta_local@banco:5432/conta_digital
+    ports:
+      - "8000:8000"
+    depends_on:
+      banco:
+        condition: service_healthy
+
+volumes:
+  dados:
